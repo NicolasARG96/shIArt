@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TuMarca IA — Streetwear co-creado con IA</title>
+  <meta name="description" content="Ropa estampada con IA. Elige un diseño o trae tu idea. Entrega rápida desde casa." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --brand: #111827; --accent: #6366f1; }
+    html, body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, sans-serif; }
+    /* --- LEAN STARTUP NOTES (Build → Measure → Learn) ---
+       BUILD: Esta página es un MVP: catálogo mínimo + formulario CUSTOM + pre-pedido.
+       MEASURE: Métricas locales (visitas, inicios de compra, briefs, leads). Exportables a CSV.
+       LEARN: Con los datos decides: mantener diseños/precio o pivotar.
+    */
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- Announcement / barra superior -->
+  <div class="bg-indigo-600 text-white text-center py-2 text-sm">
+    <strong>Drop de lanzamiento</strong>: 30 unidades por diseño · Entrega 48–72 h (catálogo) / 5–7 días (custom)
+  </div>
+
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto flex items-center justify-between px-4 py-4">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex h-8 w-8 rounded-lg bg-indigo-600"></span>
+      <span class="font-bold">TuMarca IA</span>
+    </div>
+    <nav class="hidden md:flex items-center gap-6 text-sm">
+      <a href="#catalogo" class="hover:text-indigo-600">Catálogo</a>
+      <a href="#custom" class="hover:text-indigo-600">Tu diseño</a>
+      <a href="#faq" class="hover:text-indigo-600">Preguntas</a>
+    </nav>
+    <button id="btnAdmin" class="text-xs text-gray-500 hover:text-gray-900" title="Atajo: Shift+D">Admin</button>
+  </header>
+
+  <!-- Hero -->
+  <section class="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 px-4 py-10 md:py-16 items-center">
+    <div>
+      <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">Tu idea, en tu prenda.<br><span class="text-indigo-600">Streetwear co-creado con IA</span></h1>
+      <p class="mt-4 text-gray-600">Elige un diseño de nuestro drop o cuéntanos el tuyo. Producimos desde casa con DTF y enviamos rápido.</p>
+      <div class="mt-6 flex gap-3">
+        <a href="#catalogo" class="inline-flex items-center justify-center px-5 py-3 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700">Ver catálogo</a>
+        <a href="#custom" class="inline-flex items-center justify-center px-5 py-3 bg-white border rounded-xl shadow hover:bg-gray-100">Quiero mi diseño</a>
+      </div>
+
+      <!-- KPIs en vivo (MEASURE) -->
+      <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="p-4 bg-white rounded-xl shadow border">
+          <div class="text-xs text-gray-500">Visitas</div>
+          <div id="kpiVisits" class="text-2xl font-bold">0</div>
+        </div>
+        <div class="p-4 bg-white rounded-xl shadow border">
+          <div class="text-xs text-gray-500">Inicios de pre-pedido</div>
+          <div id="kpiPre" class="text-2xl font-bold">0</div>
+        </div>
+        <div class="p-4 bg-white rounded-xl shadow border">
+          <div class="text-xs text-gray-500">Briefs Custom iniciados</div>
+          <div id="kpiCustom" class="text-2xl font-bold">0</div>
+        </div>
+        <div class="p-4 bg-white rounded-xl shadow border">
+          <div class="text-xs text-gray-500">Leads guardados</div>
+          <div id="kpiLeads" class="text-2xl font-bold">0</div>
+        </div>
+      </div>
+
+      <p class="mt-3 text-xs text-gray-500">Estos números se guardan en tu navegador (localStorage) para decisiones rápidas (LEAN).</p>
+    </div>
+    <div class="relative">
+      <div class="aspect-[4/3] rounded-2xl bg-gradient-to-br from-indigo-200 via-fuchsia-200 to-amber-200 shadow-inner"></div>
+      <div class="absolute -bottom-4 -right-4 w-40 h-40 rounded-2xl bg-white shadow-xl border p-4 hidden md:block">
+        <p class="text-xs text-gray-500 mb-1">Proceso</p>
+        <ol class="text-xs list-decimal list-inside leading-5">
+          <li>Imprimimos en film</li>
+          <li>Curamos el adhesivo</li>
+          <li>Transferimos con prensa</li>
+          <li>QC y envío</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catálogo mínimo (BUILD) -->
+  <section id="catalogo" class="max-w-7xl mx-auto px-4 py-10">
+    <div class="flex items-end justify-between mb-4">
+      <h2 class="text-2xl md:text-3xl font-bold">Catálogo de lanzamiento</h2>
+      <p class="text-sm text-gray-500">Stock limitado · Entrega 48–72 h</p>
+    </div>
+
+    <div id="gridProductos" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- Custom form (BUILD) -->
+  <section id="custom" class="max-w-7xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow border p-6 md:p-8">
+      <h3 class="text-xl md:text-2xl font-bold">Trae tu idea — ruta CUSTOM</h3>
+      <p class="text-gray-600 mt-1">Escribe tu idea. En 24–48 h te enviamos un mockup. Incluye 1 ronda de cambios. Producción 5–7 días desde que apruebas.</p>
+
+      <form id="formCustom" class="mt-6 grid md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-sm text-gray-700">Tu idea (1–2 frases)</label>
+          <textarea name="idea" required rows="3" class="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Quiero un diseño urbano con tipografía grande diciendo ..."></textarea>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Prenda</label>
+          <select name="prenda" class="mt-1 w-full rounded-lg border px-3 py-2">
+            <option>Remera pesada 220 g</option>
+            <option>Buzo 320 g</option>
+            <option>Remera manga larga</option>
+            <option>Campera</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Color base</label>
+          <select name="color" class="mt-1 w-full rounded-lg border px-3 py-2">
+            <option>Negro</option>
+            <option>Blanco</option>
+            <option>Gris</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Talle</label>
+          <select name="talle" class="mt-1 w-full rounded-lg border px-3 py-2">
+            <option>S</option>
+            <option>M</option>
+            <option>L</option>
+            <option>XL</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Tu email</label>
+          <input name="email" required type="email" class="mt-1 w-full rounded-lg border px-3 py-2" placeholder="tu-email@dominio.com" />
+        </div>
+        <div class="md:col-span-2 flex items-center gap-3 mt-2">
+          <input id="consent" type="checkbox" required class="rounded" />
+          <label for="consent" class="text-sm text-gray-600">Acepto ser contactad@ por email para mi pedido (puedo solicitar eliminación de datos)</label>
+        </div>
+        <div class="md:col-span-2 flex gap-3 mt-2">
+          <button class="px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Enviar brief</button>
+          <a id="payDeposit" href="#" class="px-5 py-3 bg-white border rounded-xl hover:bg-gray-100">Pagar seña (simulado)</a>
+        </div>
+      </form>
+
+      <p class="text-xs text-gray-500 mt-3">*Este MVP guarda los leads en tu navegador para validar interés. Luego podrás conectar un email real o checkout.</p>
+    </div>
+  </section>
+
+  <!-- FAQ / políticas básicas (para reducir fricción) -->
+  <section id="faq" class="max-w-7xl mx-auto px-4 py-10">
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow border p-6">
+        <h4 class="font-bold text-lg">Plazos</h4>
+        <p class="text-gray-600 mt-2">Catálogo: 48–72 h. Custom: 5–7 días desde aprobación del mockup.</p>
+        <h4 class="font-bold text-lg mt-4">Envíos</h4>
+        <p class="text-gray-600 mt-2">Envío pagado por el cliente (o gratis desde 50 €). Número de seguimiento en 24 h.</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow border p-6">
+        <h4 class="font-bold text-lg">Cambios y devoluciones</h4>
+        <p class="text-gray-600 mt-2">14 días si la prenda no se usó. Custom: solo por defecto de fabricación.</p>
+        <h4 class="font-bold text-lg mt-4">Cuidado</h4>
+        <p class="text-gray-600 mt-2">Lavar del revés, agua fría, no planchar directamente el estampado.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t py-8 text-center text-sm text-gray-500">
+    © <span id="year"></span> TuMarca IA · Hecho con Lean Startup · Contacto: <a id="contactMail" href="mailto:tu-email@dominio.com" class="text-indigo-600">tu-email@dominio.com</a>
+  </footer>
+
+  <!-- Modal Pre-pedido (MEASURE) -->
+  <div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-4">
+    <div class="bg-white max-w-md w-full rounded-2xl shadow-xl border p-6">
+      <h3 class="text-xl font-bold">Pre-pedido — <span id="modalProducto">Producto</span></h3>
+      <form id="formPre" class="mt-4 grid gap-3">
+        <div>
+          <label class="text-sm text-gray-700">Talle</label>
+          <select name="talle" class="mt-1 w-full rounded-lg border px-3 py-2">
+            <option>S</option><option>M</option><option>L</option><option>XL</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Color</label>
+          <select name="color" class="mt-1 w-full rounded-lg border px-3 py-2">
+            <option>Negro</option><option>Blanco</option><option>Gris</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Tu email</label>
+          <input name="email" required type="email" class="mt-1 w-full rounded-lg border px-3 py-2" placeholder="tu-email@dominio.com" />
+        </div>
+        <div class="flex items-center gap-3">
+          <input id="consent2" type="checkbox" required class="rounded" />
+          <label for="consent2" class="text-sm text-gray-600">Acepto ser contactad@ por email sobre este pedido</label>
+        </div>
+        <div class="flex gap-3 mt-2">
+          <button class="px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Confirmar</button>
+          <button id="cerrarModal" type="button" class="px-5 py-3 bg-white border rounded-xl hover:bg-gray-100">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin bar (oculta) -->
+  <div id="adminBar" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-white border shadow-xl rounded-2xl px-4 py-3 flex items-center gap-3">
+    <button id="btnExportCSV" class="text-sm px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Exportar leads CSV</button>
+    <button id="btnExportJSON" class="text-sm px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Exportar leads JSON</button>
+    <button id="btnReset" class="text-sm px-3 py-2 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200">Reset métricas</button>
+  </div>
+
+  <script>
+    // ===================== CONFIGURACIÓN RÁPIDA =====================
+    const BRAND_EMAIL = 'tu-email@dominio.com'; // ← Cambia esto
+    // ================================================================
+
+    // Utilidades
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    // Estado persistente (MEASURE)
+    const state = {
+      visits: 0,
+      preStarts: 0,
+      customStarts: 0,
+      leads: [],
+    };
+
+    function saveState() { localStorage.setItem('lean-landing-state', JSON.stringify(state)); }
+    function loadState() {
+      try {
+        const s = JSON.parse(localStorage.getItem('lean-landing-state'));
+        if (s) { state.visits = s.visits||0; state.preStarts = s.preStarts||0; state.customStarts = s.customStarts||0; state.leads = Array.isArray(s.leads)? s.leads: []; }
+      } catch(e) { /* ignore */ }
+    }
+
+    function renderKPIs(){
+      $('#kpiVisits').textContent = state.visits;
+      $('#kpiPre').textContent = state.preStarts;
+      $('#kpiCustom').textContent = state.customStarts;
+      $('#kpiLeads').textContent = state.leads.length;
+    }
+
+    // Productos mínimos (BUILD)
+    const productos = [
+      { id: 'D01', titulo: 'Tipografía Bold', precio: 29.90 },
+      { id: 'D02', titulo: 'Urbano 01', precio: 29.90 },
+      { id: 'D03', titulo: 'Urbano 02', precio: 29.90 },
+      { id: 'D04', titulo: 'Local Pride', precio: 29.90 },
+      { id: 'D05', titulo: 'Minimal Wave', precio: 29.90 },
+      { id: 'D06', titulo: 'Retro Pixel', precio: 29.90 },
+    ];
+
+    function cardSVG(title){
+      return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0%" stop-color="#dbeafe"/><stop offset="100%" stop-color="#fde68a"/></linearGradient></defs><rect width="400" height="300" rx="24" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="24" font-family="Inter, system-ui" fill="#111827">${title}</text></svg>`;
+    }
+
+    function renderProductos(){
+      const grid = $('#gridProductos');
+      grid.innerHTML = productos.map(p => `
+        <article class="bg-white rounded-2xl shadow border overflow-hidden flex flex-col">
+          <div class="aspect-[4/3]">${cardSVG(p.titulo)}</div>
+          <div class="p-4 flex-1 flex flex-col">
+            <h3 class="font-bold">${p.titulo}</h3>
+            <p class="text-gray-500 text-sm">Remera pesada 220 g · Negro/Blanco</p>
+            <div class="mt-2 font-bold">€ ${p.precio.toFixed(2)}</div>
+            <div class="mt-4 flex gap-2">
+              <button data-id="${p.id}" data-title="${p.titulo}" class="btnPre w-full px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Pre-pedido</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      $$('.btnPre').forEach(btn => btn.addEventListener('click', (e)=>{
+        state.preStarts++; saveState(); renderKPIs();
+        const t = e.currentTarget.getAttribute('data-title');
+        $('#modalProducto').textContent = t;
+        $('#modal').classList.remove('hidden');
+        $('#modal').classList.add('flex');
+      }));
+    }
+
+    // Form CUSTOM (BUILD → MEASURE)
+    $('#formCustom').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      state.customStarts++; // inicio medido
+      const fd = new FormData(e.currentTarget);
+      const lead = {
+        tipo: 'CUSTOM',
+        idea: fd.get('idea'), prenda: fd.get('prenda'), color: fd.get('color'), talle: fd.get('talle'), email: fd.get('email'),
+        fecha: new Date().toISOString(),
+      };
+      state.leads.push(lead);
+      saveState(); renderKPIs();
+      // mailto de cortesía (puedes cambiar BRAND_EMAIL)
+      const body = encodeURIComponent(`Hola, quiero mi diseño CUSTOM:%0A%0AIdea: ${lead.idea}%0APrenda: ${lead.prenda}%0AColor: ${lead.color}%0ATalle: ${lead.talle}%0AEmail: ${lead.email}`);
+      window.open(`mailto:${BRAND_EMAIL}?subject=Nuevo%20brief%20CUSTOM&body=${body}`, '_blank');
+      e.currentTarget.reset();
+      alert('¡Recibido! Te escribimos con el mockup en 24–48 h.');
+    });
+
+    // Simulación de seña (solo enlace simbólico)
+    $('#payDeposit').addEventListener('click', (e)=>{
+      e.preventDefault(); alert('Seña simulada. Conecta tu pasarela cuando quieras.');
+    });
+
+    // Modal pre-pedido (MEASURE)
+    $('#formPre').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const lead = {
+        tipo: 'PRE',
+        producto: $('#modalProducto').textContent,
+        talle: fd.get('talle'), color: fd.get('color'), email: fd.get('email'),
+        fecha: new Date().toISOString(),
+      };
+      state.leads.push(lead);
+      saveState(); renderKPIs();
+      const body = encodeURIComponent(`Hola, quiero pre-pedir: ${lead.producto}%0ATalle: ${lead.talle}%0AColor: ${lead.color}%0AEmail: ${lead.email}`);
+      window.open(`mailto:${BRAND_EMAIL}?subject=Nuevo%20pre-pedido&body=${body}`, '_blank');
+      $('#modal').classList.add('hidden');
+      $('#modal').classList.remove('flex');
+      e.currentTarget.reset();
+      alert('¡Gracias! Te escribimos para confirmar el envío.');
+    });
+    $('#cerrarModal').addEventListener('click', ()=>{
+      $('#modal').classList.add('hidden');
+      $('#modal').classList.remove('flex');
+    });
+
+    // Admin bar (LEARN)
+    function toggleAdmin(){ $('#adminBar').classList.toggle('hidden'); }
+    $('#btnAdmin').addEventListener('click', toggleAdmin);
+    document.addEventListener('keydown', (e)=>{ if (e.shiftKey && e.key.toLowerCase()==='d') toggleAdmin(); });
+
+    function exportFile(filename, content){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
+      a.download = filename; a.click();
+    }
+    $('#btnExportCSV').addEventListener('click', ()=>{
+      const header = ['tipo','producto','idea','prenda','color','talle','email','fecha'];
+      const rows = [header.join(',')].concat(state.leads.map(l=>[
+        l.tipo||'', l.producto||'', (l.idea||'').replaceAll('\n',' '), l.prenda||'', l.color||'', l.talle||'', l.email||'', l.fecha||''
+      ].map(v=>`"${(v||'').replaceAll('"','""')}"`).join(',')));
+      exportFile('leads.csv', rows.join('\n'));
+    });
+    $('#btnExportJSON').addEventListener('click', ()=>{
+      exportFile('leads.json', JSON.stringify(state.leads, null, 2));
+    });
+    $('#btnReset').addEventListener('click', ()=>{
+      if (confirm('¿Resetear métricas y leads?')) {
+        localStorage.removeItem('lean-landing-state');
+        state.visits=0; state.preStarts=0; state.customStarts=0; state.leads=[];
+        saveState(); renderKPIs();
+      }
+    });
+
+    // Init
+    loadState();
+    state.visits++; saveState();
+    renderKPIs();
+    renderProductos();
+    $('#year').textContent = new Date().getFullYear();
+    $('#contactMail').href = `mailto:${BRAND_EMAIL}`;
+
+  </script>
+</body>
+</html>
